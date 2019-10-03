@@ -69,7 +69,7 @@ void RegisterTF2IDB() {
 	CreateNative("TF2IDB_GetItemAttributes", Native_TF2IDB_GetItemAttributes);
 	
 	// TF2IDB_GetItemEquipRegions() has no equivalent
-	CreateNative("TF2IDB_GetItemEquipRegions", Native_TF2IDB_GetItemEquipRegions);
+	CreateNative("TF2IDB_GetItemEquipRegions", Native_Common_GetItemEquipRegions);
 	
 	// TF2IDB_DoRegionsConflict() has no equivalent
 	CreateNative("TF2IDB_DoRegionsConflict", Native_Common_DoRegionsConflict);
@@ -168,7 +168,7 @@ void RegisterTF2ItemsInfo() {
 	CreateNative("TF2II_GetItemQualityName", Native_Common_GetItemQualityName);
 	
 	//TF2II_GetItemNumAttributes() can be done by getting the length of the ArrayList returned from TF2Econ_GetItemStaticAttributes().
-	CreateNative("TF2II_GetItemNumAttributes", Native_NotImplemented);
+	CreateNative("TF2II_GetItemNumAttributes", Native_TF2II_GetItemNumAttributes);
 	
 	//TF2II_GetItemAttributeName() can be done by getting the attribute ID from the ArrayList returned from TF2Econ_GetItemStaticAttributes(), calling TF2Econ_GetAttributeName() to get the name.
 	CreateNative("TF2II_GetItemAttributeName", Native_NotImplemented);
@@ -186,10 +186,10 @@ void RegisterTF2ItemsInfo() {
 	CreateNative("TF2II_GetToolType", Native_NotImplemented);
 	
 	//TF2II_ItemHolidayRestriction() can be done with TF2Econ_GetItemDefinitionString(defindex, "holiday_restriction", ...) and checking the string for your holiday
-	CreateNative("TF2II_ItemHolidayRestriction", Native_NotImplemented);
+	CreateNative("TF2II_ItemHolidayRestriction", Native_TF2II_ItemHolidayRestriction);
 	
 	//TF2II_GetItemEquipRegions() has no equivalent
-	CreateNative("TF2II_AttribStoredAsInteger", Native_NotImplemented);
+	CreateNative("TF2II_GetItemEquipRegions", Native_Common_GetItemEquipRegions);
 	
 	//TF2II_IsValidAttribID() maps directly to TF2Econ_IsValidAttributeDefinition()
 	CreateNative("TF2II_IsValidAttribID", Native_Common_IsValidAttributeDefinition);

@@ -102,35 +102,6 @@ public int Native_TF2IDB_ItemHasAttribute(Handle hPlugin, int nParams) {
 }
 
 /**
- * ArrayList TF2IDB_GetItemEquipRegions(int defindex);
- */
-public int Native_TF2IDB_GetItemEquipRegions(Handle hPlugin, int nParams) {
-	int defindex = GetNativeCell(1);
-	int itemRegionBits = TF2Econ_GetItemEquipRegionGroupBits(defindex);
-	
-	ArrayList itemRegionNames = new ArrayList(ByteCountToCells(16));
-	if (!itemRegionBits) {
-		return MoveHandle(itemRegionNames, hPlugin);
-	}
-	
-	StringMap regions = TF2Econ_GetEquipRegionGroups();
-	StringMapSnapshot snapshot = regions.Snapshot();
-	for (int i; i < snapshot.Length; i++) {
-		char buffer[16];
-		snapshot.GetKey(i, buffer, sizeof(buffer));
-		
-		int bit;
-		if (regions.GetValue(buffer, bit) && (itemRegionBits >> bit) & 1) {
-			itemRegionNames.PushString(buffer);
-		}
-	}
-	delete snapshot;
-	delete regions;
-	
-	return MoveHandle(itemRegionNames, hPlugin);
-}
-
-/**
  * bool TF2IDB_GetAttributeType(int attrdef, char[] buffer, int maxlen);
  */
 public int Native_TF2IDB_GetAttributeType(Handle hPlugin, int nParams) {

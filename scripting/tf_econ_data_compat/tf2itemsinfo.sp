@@ -173,7 +173,7 @@ public bool ItemFilter_TF2IIFindItems(int itemdef, DataPack queryInfo) {
 	if (desiredClass[0]) {
 		char itemClass[64];
 		if (!TF2Econ_GetItemClassName(itemdef, itemClass, sizeof(itemClass))
-				|| !StrEqual(itemClass, desiredClass)) {
+				|| !StrEqual(itemClass, desiredClass, false)) {
 			return false;
 		}
 	}
@@ -181,16 +181,17 @@ public bool ItemFilter_TF2IIFindItems(int itemdef, DataPack queryInfo) {
 	if (desiredSlot[0]) {
 		// TODO we need to support tf_weapon_revolver as primary
 		char itemSlot[32];
-		if (!TF2Econ_GetItemDefinitionString(itemdef, "item_slot", itemSlot, sizeof(itemSlot))
-				|| !StrEqual(itemSlot, desiredSlot)) {
+		TF2Econ_GetItemDefinitionString(itemdef, "item_slot", itemSlot, sizeof(itemSlot));
+		
+		if (!strlen(itemSlot) || !StrEqual(itemSlot, desiredSlot, false)) {
 			return false;
 		}
 	}
 	
 	if (tool[0]) {
 		char toolType[64];
-		if (!TF2Econ_GetItemDefinitionString(itemdef, "tool/type", toolType, sizeof(toolType))
-				|| !StrEqual(tool, toolType)) {
+		TF2Econ_GetItemDefinitionString(itemdef, "tool/type", toolType, sizeof(toolType));
+		if (!strlen(toolType) || !StrEqual(tool, toolType, false)) {
 			return false;
 		}
 	}
@@ -198,11 +199,48 @@ public bool ItemFilter_TF2IIFindItems(int itemdef, DataPack queryInfo) {
 	return true;
 }
 
+/**
+ * bool TF2II_ItemHolidayRestriction(int itemdef, TFHoliday holiday);
+ */
+public int Native_TF2II_ItemHolidayRestriction(Handle hPlugin, int nParams) {
+	int itemdef = GetNativeCell(1);
+	TFHoliday holiday = view_as<TFHoliday>(GetNativeCell(2));
+	
+	if (holiday == TFHoliday_Birthday) {
+		return GetItemProperties(itemdef) & TF2II_PROP_BDAY_STRICT != 0;
+	} else if (holiday == TFHoliday_Halloween || holiday == TFHoliday_FullMoon
+			|| holiday == TFHoliday_HalloweenOrFullMoon) {
+		return GetItemProperties(itemdef) & TF2II_PROP_HOFM_STRICT != 0;
+	} else if (holiday == TFHoliday_Christmas) {
+		return GetItemProperties(itemdef) & TF2II_PROP_XMAS_STRICT != 0;
+	}
+	return false;
+}
+
+/**
+ * int TF2II_GetItemNumAttributes(int itemdef);
+ */
+public int Native_TF2II_GetItemNumAttributes(Handle hPlugin, int nParams) {
+	int itemdef = GetNativeCell(1);
+	
+	ArrayList attribs = TF2Econ_GetItemStaticAttributes(itemdef);
+	if (!attribs) {
+		return 0;
+	}
+	int nAttribs = attribs.Length;
+	delete attribs;
+	return nAttribs;
+}
+
+/**
+ * Returns an implementation of tf2itemsinfo's used_by_classes bitfield (TF2II_CLASS_*).
+ */
 static int GetUseClassBits(int defindex) {
+	// scout is shifted 0 bits instead of 1
 	int bits;
-	for (TFClassType i; i < TFClassType; i++) {
+	for (TFClassType i = TFClass_Scout; i < TFClassType; i++) {
 		if (TF2Econ_GetItemSlot(defindex, i) != -1) {
-			bits |= (1 << view_as<int>(i));
+			bits |= (1 << (view_as<int>(i) - 1));
 		}
 	}
 	return bits;
