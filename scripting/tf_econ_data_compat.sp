@@ -11,7 +11,7 @@
 #include <tf_econ_data>
 #include <stocksoup/handles>
 
-#define PLUGIN_VERSION "0.1.1"
+#define PLUGIN_VERSION "0.2.0"
 public Plugin myinfo = {
 	name = "[TF2] Econ Data Compatibility Layer for TF2II and TF2IDB",
 	author = "nosoop",
@@ -43,6 +43,10 @@ public APLRes AskPluginLoad2(Handle self, bool late, char[] error, int maxlen) {
 		RegisterTF2ItemsInfo();
 	}
 	return APLRes_Success;
+}
+
+public void OnAllPluginsLoaded() {
+	TF2IDB_BuildDatabase();
 }
 
 void RegisterTF2IDB() {
@@ -120,6 +124,11 @@ void RegisterTF2IDB() {
 	CreateNative("TF2IDB_GetQualityByName", Native_Common_GetQualityByName);
 	
 	// sqlite-based things below -- would like to implement these someday by creating / caching a database
+	
+	/**
+	 * TODO: Instantiate an in-memory or file-backed database when we need to use actual SQLite
+	 * queries the first time.
+	 */
 	
 	// TF2IDB_FindItemCustom() is an SQL query.  Not going to implement that.
 	CreateNative("TF2IDB_FindItemCustom", Native_NotImplemented);
