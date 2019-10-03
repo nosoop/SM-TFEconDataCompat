@@ -232,6 +232,36 @@ public int Native_TF2II_GetItemNumAttributes(Handle hPlugin, int nParams) {
 	return nAttribs;
 }
 
+public int Native_TF2II_GetItemAttributeID(Handle hPlugin, int nParams) {
+	int itemdef = GetNativeCell(1);
+	int index = GetNativeCell(2);
+	
+	ArrayList attribs = TF2Econ_GetItemStaticAttributes(itemdef);
+	if (!attribs) {
+		return -1;
+	}
+	
+	int attrid = attribs.Get(index, .block = 0);
+	
+	delete attribs;
+	return attrid;
+}
+
+public int Native_TF2II_GetItemAttributeValue(Handle hPlugin, int nParams) {
+	int itemdef = GetNativeCell(1);
+	int index = GetNativeCell(2);
+	
+	ArrayList attribs = TF2Econ_GetItemStaticAttributes(itemdef);
+	if (!attribs) {
+		return -1;
+	}
+	
+	any value = attribs.Get(index, .block = 1);
+	
+	delete attribs;
+	return value;
+}
+
 /**
  * Returns an implementation of tf2itemsinfo's used_by_classes bitfield (TF2II_CLASS_*).
  */

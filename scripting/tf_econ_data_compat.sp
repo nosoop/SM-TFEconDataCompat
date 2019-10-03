@@ -11,14 +11,14 @@
 #include <tf_econ_data>
 #include <stocksoup/handles>
 
-#define PLUGIN_VERSION "0.0.0"
+#define PLUGIN_VERSION "0.1.0"
 public Plugin myinfo = {
 	name = "[TF2] Econ Data Compatibility Layer for TF2II and TF2IDB",
 	author = "nosoop",
 	description = "Mostly drop-in compatibility layer for older "
 			... "item schema-accessing libraries.",
 	version = PLUGIN_VERSION,
-	url = "localhost"
+	url = "https://github.com/nosoop/SM-TFEconDataCompat"
 }
 
 #include "tf_econ_data_compat/common.sp"
@@ -174,10 +174,10 @@ void RegisterTF2ItemsInfo() {
 	CreateNative("TF2II_GetItemAttributeName", Native_NotImplemented);
 	
 	//TF2II_GetItemAttributeID() can be done by getting the attribute ID from the ArrayList returned from TF2Econ_GetItemStaticAttributes().
-	CreateNative("TF2II_GetItemAttributeID", Native_NotImplemented);
+	CreateNative("TF2II_GetItemAttributeID", Native_TF2II_GetItemAttributeID);
 	
 	//TF2II_GetItemAttributeValue() can be done by getting the attribute value from TF2Econ_GetItemStaticAttributes(). This returns a raw 32-bit value; if the attribute is a string / vector you'll probably be better off calling TF2Econ_GetItemDefinitionString(defindex, "static_attrs/${attr}", ...) with the attribute name.
-	CreateNative("TF2II_GetItemAttributeValue", Native_NotImplemented);
+	CreateNative("TF2II_GetItemAttributeValue", Native_TF2II_GetItemAttributeValue);
 	
 	//TF2II_GetItemAttributes() cab be done with TF2Econ_GetItemStaticAttributes(). I have no idea how their ArrayList is laid out, though.
 	CreateNative("TF2II_GetItemAttributes", Native_NotImplemented);
