@@ -263,6 +263,25 @@ public int Native_TF2II_GetItemAttributeValue(Handle hPlugin, int nParams) {
 }
 
 /**
+ * bool TF2II_GetItemClass(int itemdef, char[] buffer, int maxlen, TFClassType playerClass);
+ */
+public int Native_TF2II_GetItemClassName(Handle hPlugin, int nParams) {
+	int itemdef = GetNativeCell(1);
+	int maxlen = GetNativeCell(3);
+	TFClassType playerClass = GetNativeCell(4);
+	
+	char[] buffer = new char[maxlen];
+	if (TF2Econ_GetItemClassName(itemdef, buffer, maxlen)) {
+		if (playerClass) {
+			TF2Econ_TranslateWeaponEntForClass(buffer, maxlen, playerClass);
+		}
+		SetNativeString(2, buffer, maxlen, true);
+		return true;
+	}
+	return false;
+}
+
+/**
  * Returns an implementation of tf2itemsinfo's used_by_classes bitfield (TF2II_CLASS_*).
  */
 static int GetUseClassBits(int defindex) {

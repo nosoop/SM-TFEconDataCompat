@@ -11,7 +11,7 @@
 #include <tf_econ_data>
 #include <stocksoup/handles>
 
-#define PLUGIN_VERSION "0.1.0"
+#define PLUGIN_VERSION "0.1.1"
 public Plugin myinfo = {
 	name = "[TF2] Econ Data Compatibility Layer for TF2II and TF2IDB",
 	author = "nosoop",
@@ -137,7 +137,7 @@ void RegisterTF2ItemsInfo() {
 	
 	CreateNative("TF2II_IsValidItemID", Native_Common_IsValidItemID);
 	CreateNative("TF2II_GetItemName", Native_Common_GetItemName);
-	CreateNative("TF2II_GetItemClass", Native_Common_GetItemClassName);
+	CreateNative("TF2II_GetItemClass", Native_TF2II_GetItemClassName);
 	
 	//TF2II_ItemHasProperty() can be done with calls to TF2Econ_GetItemDefinitionString()
 	CreateNative("TF2II_ItemHasProperty", Native_ItemInfo_ItemHasProperty);
