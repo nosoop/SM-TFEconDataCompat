@@ -11,7 +11,7 @@
 #include <tf_econ_data>
 #include <stocksoup/handles>
 
-#define PLUGIN_VERSION "0.2.0"
+#define PLUGIN_VERSION "0.2.1"
 public Plugin myinfo = {
 	name = "[TF2] Econ Data Compatibility Layer for TF2II and TF2IDB",
 	author = "nosoop",
@@ -24,6 +24,11 @@ public Plugin myinfo = {
 #include "tf_econ_data_compat/common.sp"
 #include "tf_econ_data_compat/tf2idb.sp"
 #include "tf_econ_data_compat/tf2itemsinfo.sp"
+
+#define COMPAT_MODE_TF2II  (1 << 0)
+#define COMPAT_MODE_TF2IDB (1 << 1)
+
+int g_fCompatMode;
 
 public APLRes AskPluginLoad2(Handle self, bool late, char[] error, int maxlen) {
 	char pluginFilePath[PLATFORM_MAX_PATH];
@@ -46,7 +51,10 @@ public APLRes AskPluginLoad2(Handle self, bool late, char[] error, int maxlen) {
 }
 
 public void OnAllPluginsLoaded() {
-	TF2IDB_BuildDatabase();
+	
+	if (g_fCompatMode & COMPAT_MODE_TF2IDB) {
+		TF2IDB_BuildDatabase();
+	}
 }
 
 void RegisterTF2IDB() {
@@ -135,6 +143,8 @@ void RegisterTF2IDB() {
 	
 	// in theory we could create a database in memory for this and insert all the stuff
 	CreateNative("TF2IDB_CustomQuery", Native_NotImplemented);
+	
+	g_fCompatMode |= COMPAT_MODE_TF2IDB;
 }
 
 void RegisterTF2ItemsInfo() {
@@ -284,6 +294,8 @@ void RegisterTF2ItemsInfo() {
 	
 	//TF2II_OnSearchCommand() is a forward
 	//TF2II_OnFindItems() is a forward
+	
+	g_fCompatMode |= COMPAT_MODE_TF2II;
 }
 
 public int Native_NotImplemented(Handle hPlugin, int nParams) {
