@@ -178,6 +178,10 @@ public int Native_TF2IDB_GetAttributeProperties(Handle hPlugin, int nParams) {
 
 #include <profiler>
 
+/**
+ * Returns a Database handle to the TF2IDB database, creating it if necessary.
+ * This provides support for TF2IDB's TF2IDB_FindItemCustom and TF2IDB_CustomQuery natives.
+ */
 Database TF2IDB_BuildDatabase() {
 	Handle prof = CreateProfiler();
 	StartProfiling(prof);
@@ -188,24 +192,32 @@ Database TF2IDB_BuildDatabase() {
 		SetFailState("Failed to use tf2idb.sq3: %s", error);
 	}
 	
+	// TODO compare database filetime; recreate if either plugin or items_game is newer
+	
 	// this implements the script from
 	// https://github.com/FlaminSarge/tf2idb/tree/c2bc42e34c2a2e9a4e9ad0d0fe8cda564e970bb6
 	
-	SQL_FastQuery(db, "CREATE TABLE tf2idb_class ("
+	if (!SQL_FastQuery(db, "CREATE TABLE tf2idb_class ("
 			... "'id' INTEGER NOT NULL, "
 			... "'class' TEXT NOT NULL, "
 			... "'slot' TEXT, "
-			... "PRIMARY KEY ('id', 'class'));");
+			... "PRIMARY KEY ('id', 'class'));")) {
+		SQL_GetError(db, error, sizeof(error));
+		SetFailState("Failed to create table tf2idb_class: %s", error);
+	}
 	
-	SQL_FastQuery(db, "CREATE TABLE tf2idb_item_attributes ("
+	if (!SQL_FastQuery(db, "CREATE TABLE tf2idb_item_attributes ("
 			... "'id' INTEGER NOT NULL, "
 			... "'attribute' INTEGER NOT NULL, "
 			... "'value' TEXT NOT NULL, "
 			... "'static' INTEGER, "
-			... "PRIMARY KEY ('id, 'attribute'));");
+			... "PRIMARY KEY ('id', 'attribute'));")) {
+		SQL_GetError(db, error, sizeof(error));
+		SetFailState("Failed to create table tf2idb_item_attributes: %s", error);
+	}
 	
-	SQL_FastQuery(db, "CREATE TABLE tf2idb_item ("
-			... "'id' INTEGER PRIMARY NOT NULL, "
+	if (!SQL_FastQuery(db, "CREATE TABLE tf2idb_item ("
+			... "'id' INTEGER PRIMARY KEY NOT NULL, "
 			... "'name' TEXT NOT NULL, "
 			... "'item_name' TEXT, "
 			... "'class' TEXT NOT NULL, "
@@ -217,25 +229,40 @@ Database TF2IDB_BuildDatabase() {
 			... "'baseitem' INTEGER, "
 			... "'holiday_restriction' TEXT, "
 			... "'has_string_attribute' INTEGER, "
-			... "'propername' INTEGER);");
+			... "'propername' INTEGER);")) {
+		SQL_GetError(db, error, sizeof(error));
+		SetFailState("Failed to create table tf2idb_item: %s", error);
+	}
 	
-	SQL_FastQuery(db, "CREATE TABLE 'tf2idb_particles' ("
-			... "'id' INTEGER PRIMARY KEY NOT NULL , 'name' TEXT NOT NULL);");
+	if (!SQL_FastQuery(db, "CREATE TABLE 'tf2idb_particles' ("
+			... "'id' INTEGER PRIMARY KEY NOT NULL , 'name' TEXT NOT NULL);")) {
+		SQL_GetError(db, error, sizeof(error));
+		SetFailState("Failed to create table tf2idb_particles: %s", error);
+	}
 	
-	SQL_FastQuery(db, "CREATE TABLE 'tf2idb_equip_conflicts' ("
+	if (!SQL_FastQuery(db, "CREATE TABLE 'tf2idb_equip_conflicts' ("
 			... "'name' TEXT NOT NULL, "
 			... "'region' TEXT NOT NULL, "
-			... "PRIMARY KEY ('name', 'region'));");
+			... "PRIMARY KEY ('name', 'region'));")) {
+		SQL_GetError(db, error, sizeof(error));
+		SetFailState("Failed to create table tf2idb_equip_conflicts: %s", error);
+	}
 	
-	SQL_FastQuery(db, "CREATE TABLE 'tf2idb_equip_regions' ("
+	if (!SQL_FastQuery(db, "CREATE TABLE 'tf2idb_equip_regions' ("
 			... "'id' INTEGER NOT NULL, "
 			... "'region' TEXT NOT NULL, "
-			... "PRIMARY KEY ('id', 'region'));");
+			... "PRIMARY KEY ('id', 'region'));")) {
+		SQL_GetError(db, error, sizeof(error));
+		SetFailState("Failed to create table tf2idb_equip_regions: %s", error);
+	}
 	
-	SQL_FastQuery(db, "CREATE TABLE 'tf2idb_capabilities' ("
-			... "'id' INTEGER NOT NULL , 'capability' TEXT NOT NULL)");
+	if (!SQL_FastQuery(db, "CREATE TABLE 'tf2idb_capabilities' ("
+			... "'id' INTEGER NOT NULL , 'capability' TEXT NOT NULL)")) {
+		SQL_GetError(db, error, sizeof(error));
+		SetFailState("Failed to create table tf2idb_capabilities: %s", error);
+	}
 	
-	SQL_FastQuery(db, "CREATE TABLE 'tf2idb_attributes' ("
+	if (!SQL_FastQuery(db, "CREATE TABLE 'tf2idb_attributes' ("
 			... "'id' INTEGER PRIMARY KEY NOT NULL, "
 			... "'name' TEXT NOT NULL, "
 			... "'attribute_class' TEXT, "
@@ -249,18 +276,35 @@ Database TF2IDB_BuildDatabase() {
 			... "'is_set_bonus' INTEGER, "
 			... "'is_user_generated' INTEGER, "
 			... "'can_affect_recipe_component_name' INTEGER, "
-			... "'apply_tag_to_item_definition' TEXT);");
+			... "'apply_tag_to_item_definition' TEXT);")) {
+		SQL_GetError(db, error, sizeof(error));
+		SetFailState("Failed to create table tf2idb_attributes: %s", error);
+	}
 	
-	SQL_FastQuery(db, "CREATE TABLE 'tf2idb_qualities' ("
+	if (!SQL_FastQuery(db, "CREATE TABLE 'tf2idb_qualities' ("
 			... "'name' TEXT PRIMARY KEY NOT NULL, "
-			... "'value' INTEGER NOT NULL );");
+			... "'value' INTEGER NOT NULL );")) {
+		SQL_GetError(db, error, sizeof(error));
+		SetFailState("Failed to create table tf2idb_qualities: %s", error);
+	}
 	
-	SQL_FastQuery(db, "CREATE INDEX '__idx_tf2idb_item_attributes' ON 'tf2idb_item_attributes' "
-			... "('attribute' ASC);");
-	SQL_FastQuery(db, "CREATE INDEX '__idx_tf2idb_class' ON 'tf2idb_class'"
-			... "('class' ASC)");
-	SQL_FastQuery(db, "CREATE INDEX '__idx_tf2idb_item' ON 'tf2idb_item'"
-			... "('slot' ASC)");
+	if (!SQL_FastQuery(db, "CREATE INDEX '__idx_tf2idb_item_attributes' "
+			... "ON 'tf2idb_item_attributes' ('attribute' ASC);")) {
+		SQL_GetError(db, error, sizeof(error));
+		SetFailState("Failed to create index for tf2idb_item_attributes: %s", error);
+	}
+	
+	if (!SQL_FastQuery(db, "CREATE INDEX '__idx_tf2idb_class' ON 'tf2idb_class'"
+			... "('class' ASC)")) {
+		SQL_GetError(db, error, sizeof(error));
+		SetFailState("Failed to create index for tf2idb_class: %s", error);
+	}
+	
+	if (!SQL_FastQuery(db, "CREATE INDEX '__idx_tf2idb_item' ON 'tf2idb_item'"
+			... "('slot' ASC)")) {
+		SQL_GetError(db, error, sizeof(error));
+		SetFailState("Failed to create index for tf2idb_item: %s", error);
+	}
 	
 	// quality handling
 	{
@@ -314,78 +358,67 @@ Database TF2IDB_BuildDatabase() {
 	}
 	
 	// attribute handling
+	StringMap stringTypedAttributes = new StringMap();
 	{
-		DBStatement attributeInsert = SQL_PrepareQuery(db,
-				"INSERT INTO tf2idb_attributes "
-				... "(id, name, attribute_class, attribute_type, description_string, "
-				... "description_format, effect_type, hidden, stored_as_integer, armory_desc, "
-				... "is_set_bonus, is_user_generated, can_affect_recipe_component_name, "
-				... "apply_tag_to_item_definition) VALUES "
-				... "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", error, sizeof(error));
-		if (!attributeInsert) {
-			SetFailState("Failed to prepare tf2idb_attributes query: %s", error);
-		}
-		
 		// TODO I guess we need a TF2Econ_GetAttributeList() for this...
+		Transaction attrTxn = new Transaction();
 		for (int attrdef; attrdef < 4096; attrdef++) {
 			if (!TF2Econ_IsValidAttributeDefinition(attrdef)) {
 				continue;
 			}
 			
-			char buffer[256];
+			char name[128];
+			TF2Econ_GetAttributeName(attrdef, name, sizeof(name));
 			
-			attributeInsert.BindInt(0, attrdef);
+			char attrClass[64];
+			TF2Econ_GetAttributeClassName(attrdef, attrClass, sizeof(attrClass));
 			
-			TF2Econ_GetAttributeName(attrdef, buffer, sizeof(buffer));
-			attributeInsert.BindString(1, buffer, .copy = true);
+			char attrType[16];
+			TF2Econ_GetAttributeDefinitionString(attrdef, "attribute_type", attrType,
+					sizeof(attrType));
 			
-			TF2Econ_GetAttributeClassName(attrdef, buffer, sizeof(buffer));
-			attributeInsert.BindString(2, buffer, .copy = true);
-			
-			TF2Econ_GetAttributeDefinitionString(attrdef, "attribute_type", buffer,
-					sizeof(buffer));
-			attributeInsert.BindString(3, buffer, .copy = true);
-			
+			char attrDesc[128];
 			TF2Econ_GetAttributeDefinitionString(attrdef, "description_string",
-					buffer, sizeof(buffer));
-			attributeInsert.BindString(4, buffer, .copy = true);
+					attrDesc, sizeof(attrDesc));
 			
+			char attrFmt[128];
 			TF2Econ_GetAttributeDefinitionString(attrdef, "description_format",
-					buffer, sizeof(buffer));
-			attributeInsert.BindString(5, buffer, .copy = true);
+					attrFmt, sizeof(attrFmt));
 			
+			char effectType[16];
 			TF2Econ_GetAttributeDefinitionString(attrdef, "effect_type",
-					buffer, sizeof(buffer));
-			attributeInsert.BindString(6, buffer, .copy = true);
+					effectType, sizeof(effectType));
 			
-			attributeInsert.BindInt(7, TF2Econ_IsAttributeHidden(attrdef));
-			
-			attributeInsert.BindInt(8, TF2Econ_IsAttributeStoredAsInteger(attrdef));
-			
+			char attrArmoryDesc[32];
 			TF2Econ_GetAttributeDefinitionString(attrdef, "armory_desc",
-					buffer, sizeof(buffer));
-			attributeInsert.BindString(9, buffer, .copy = true);
+					attrArmoryDesc, sizeof(attrArmoryDesc));
 			
-			TF2Econ_GetAttributeDefinitionString(attrdef, "is_set_bonus",
-					buffer, sizeof(buffer));
-			attributeInsert.BindString(10, buffer, .copy = true);
-			
-			TF2Econ_GetAttributeDefinitionString(attrdef, "is_user_generated",
-					buffer, sizeof(buffer));
-			attributeInsert.BindString(11, buffer, .copy = true);
-			
-			TF2Econ_GetAttributeDefinitionString(attrdef, "can_affect_recipe_component_name",
-					buffer, sizeof(buffer));
-			attributeInsert.BindString(12, buffer, .copy = true);
-			
+			char appliedTag[64];
 			TF2Econ_GetAttributeDefinitionString(attrdef, "apply_tag_to_item_definition",
-					buffer, sizeof(buffer));
-			attributeInsert.BindString(13, buffer, .copy = true);
+					appliedTag, sizeof(appliedTag));
 			
-			SQL_Execute(attributeInsert);
+			if (StrEqual(attrType, "string")) {
+				stringTypedAttributes.SetValue(name, true);
+			}
+			
+			char query[2048];
+			db.Format(query, sizeof(query), "INSERT INTO tf2idb_attributes "
+					... "(id, name, attribute_class, attribute_type, description_string, "
+					... "description_format, effect_type, hidden, stored_as_integer, "
+					... "armory_desc, is_set_bonus, is_user_generated, "
+					... "can_affect_recipe_component_name, apply_tag_to_item_definition) "
+					... "VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s', %b, %b, '%s', "
+					... "%b, %b, %b, '%s');",
+					attrdef, name, attrClass, attrType, attrDesc,
+					attrFmt, effectType, TF2Econ_IsAttributeHidden(attrdef),
+					TF2Econ_IsAttributeStoredAsInteger(attrdef),
+					attrArmoryDesc, !!_GetItemDefinitionInt(attrdef, "is_set_bonus"),
+					!!_GetItemDefinitionInt(attrdef, "is_user_generated"),
+					!!_GetItemDefinitionInt(attrdef, "can_affect_recipe_component_name"),
+					appliedTag);
+			attrTxn.AddQuery(query);
 		}
-		
-		delete attributeInsert;
+		db.Execute(attrTxn, .onError = OnTransactionError);
 	}
 	
 	// equipment conflicts
@@ -399,16 +432,119 @@ Database TF2IDB_BuildDatabase() {
 	
 	// items
 	{
-		// TODO insert static attributes into tf2idb_item_attributes
+		ArrayList items = TF2Econ_GetItemList();
 		
-		// TODO insert items into tf2idb_item
-		
-		// TODO deal with equip regions
-		
-		// TODO deal with capabilities (currently no support in econdata)
+		Transaction itemTxn = new Transaction();
+		for (int i; i < items.Length; i++) {
+			bool bContainsStringAttr;
+			
+			int itemdef = items.Get(i);
+			ArrayList itemStaticAttributes = TF2Econ_GetItemStaticAttributes(itemdef);
+			
+			char query[512];
+			
+			// add attribute queries to txn
+			for (int a; a < itemStaticAttributes.Length; a++) {
+				int attrdef = itemStaticAttributes.Get(a, 0);
+				
+				char attrName[128];
+				TF2Econ_GetAttributeName(attrdef, attrName, sizeof(attrName));
+				
+				any discard;
+				bContainsStringAttr |= stringTypedAttributes.GetValue(attrName, discard);
+				
+				char attrLookupKey[256];
+				Format(attrLookupKey, sizeof(attrLookupKey), "attributes/%s/value", attrName);
+				
+				bool bInStatic = true;
+				
+				char attrValueStr[64];
+				TF2Econ_GetItemDefinitionString(itemdef, attrLookupKey, attrValueStr,
+						sizeof(attrValueStr));
+				
+				if (!strlen(attrValueStr)) {
+					bInStatic = false;
+					Format(attrLookupKey, sizeof(attrLookupKey), "static_attrs/%s", attrName);
+					TF2Econ_GetItemDefinitionString(itemdef, attrLookupKey, attrValueStr,
+						sizeof(attrValueStr));
+				}
+				
+				db.Format(query, sizeof(query), "INSERT INTO tf2idb_item_attributes "
+						... "(id, attribute, value, static) VALUES "
+						... "(%d, %d, '%s', %d);", itemdef, attrdef, attrValueStr, bInStatic);
+				
+				itemTxn.AddQuery(query);
+			}
+			
+			// add items to tf2idb_item table
+			{
+				char name[128];
+				TF2Econ_GetItemName(itemdef, name, sizeof(name));
+				
+				char localName[128];
+				TF2Econ_GetLocalizedItemName(itemdef, localName, sizeof(localName));
+				
+				char className[64];
+				TF2Econ_GetItemClassName(itemdef, className, sizeof(className));
+				
+				char slotStr[64];
+				TF2Econ_GetItemDefinitionString(itemdef, "item_slot", slotStr, sizeof(slotStr));
+				
+				char qualityStr[64];
+				TF2Econ_GetItemDefinitionString(itemdef, "item_quality",
+						qualityStr, sizeof(qualityStr));
+				
+				char toolStr[64];
+				TF2Econ_GetItemDefinitionString(itemdef, "tool/type", toolStr, sizeof(toolStr));
+				
+				int nMinLevel, nMaxLevel;
+				TF2Econ_GetItemLevelRange(itemdef, nMinLevel, nMaxLevel);
+				
+				bool bBaseItem = !!_GetItemDefinitionInt(itemdef, "baseitem");
+				
+				char holidayRestriction[64];
+				TF2Econ_GetItemDefinitionString(itemdef, "holiday_restriction",
+						holidayRestriction, sizeof(holidayRestriction));
+				
+				bool bProperName = !!_GetItemDefinitionInt(itemdef, "propername");
+				
+				// TODO determine string attributes
+				bool hasStringAttr = false;
+				
+				db.Format(query, sizeof(query), "INSERT INTO tf2idb_item "
+						... "(id, name, item_name, class, slot, quality, tool_type, "
+						... "min_ilevel, max_ilevel, baseitem, holiday_restriction, "
+						... "has_string_attribute, propername) VALUES "
+						... "(%d, '%s', '%s', '%s', '%s', '%s', '%s', "
+						... "%d, %d, %b, '%s', %b, %b);",
+						itemdef, name, localName, className, slotStr, qualityStr, toolStr,
+						nMinLevel, nMaxLevel, bBaseItem, holidayRestriction, hasStringAttr,
+						bProperName);
+				itemTxn.AddQuery(query);
+			}
+			
+			// TODO deal with used_by_classes
+			
+			// TODO deal with equip regions
+			
+			// TODO deal with capabilities (currently no support in econdata)
+		}
+		db.Execute(itemTxn, .onError = OnTransactionError);
 	}
+	delete stringTypedAttributes;
 	
 	StopProfiling(prof);
 	PrintToServer("[tfeconcompat] Database created in %fs.", GetProfilerTime(prof));
 	delete prof;
+}
+
+public void OnTransactionError(Database db, any data, int numQueries, const char[] error,
+		int failIndex, any[] queryData) {
+	SetFailState("Transaction failure: %s", error);
+}
+
+static int _GetItemDefinitionInt(int defindex, const char[] key, int defaultValue = 0) {
+	char buffer[64];
+	return TF2Econ_GetItemDefinitionString(defindex, key, buffer, sizeof(buffer))?
+			StringToInt(buffer) : defaultValue;
 }

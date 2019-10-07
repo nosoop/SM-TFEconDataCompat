@@ -11,7 +11,10 @@
 #include <tf_econ_data>
 #include <stocksoup/handles>
 
-#define PLUGIN_VERSION "0.2.1"
+// TF2IDB stub's database creation stores a bunch of stuff on the heap
+#pragma dynamic 524288
+
+#define PLUGIN_VERSION "0.3.0"
 public Plugin myinfo = {
 	name = "[TF2] Econ Data Compatibility Layer for TF2II and TF2IDB",
 	author = "nosoop",
