@@ -14,7 +14,7 @@
 // TF2IDB stub's database creation stores a bunch of stuff on the heap
 #pragma dynamic 524288
 
-#define PLUGIN_VERSION "0.3.0"
+#define PLUGIN_VERSION "0.3.1"
 public Plugin myinfo = {
 	name = "[TF2] Econ Data Compatibility Layer for TF2II and TF2IDB",
 	author = "nosoop",
@@ -63,7 +63,7 @@ public void OnAllPluginsLoaded() {
 void RegisterTF2IDB() {
 	RegPluginLibrary("tf2idb");
 	CreateConVar("sm_tf2idb_version", "0.94.0-econdata-shim-" ... PLUGIN_VERSION,
-			"TF2IDB version");
+			"TF2IDB version", .flags = FCVAR_NOTIFY);
 	
 	CreateNative("TF2IDB_IsValidItemID", Native_Common_IsValidItemID);
 	CreateNative("TF2IDB_GetItemName", Native_Common_GetItemName);
@@ -153,7 +153,7 @@ void RegisterTF2IDB() {
 void RegisterTF2ItemsInfo() {
 	RegPluginLibrary("tf2itemsinfo");
 	CreateConVar("sm_tf2ii_version", "1.9.1-econdata-shim-" ... PLUGIN_VERSION,
-			"TF2 Items Info Plugin Version");
+			"TF2 Items Info Plugin Version", .flags = FCVAR_NOTIFY);
 	
 	CreateNative("TF2II_IsItemSchemaPrecached", Native_ItemInfo_IsSchemaPrecached);
 	
