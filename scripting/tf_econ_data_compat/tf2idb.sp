@@ -423,11 +423,50 @@ Database TF2IDB_BuildDatabase() {
 	
 	// equipment conflicts
 	{
+		char query[512];
+		Transaction regionTxn = new Transaction();
+		
+		// iterate group names, find masks, then convert to conflicting group names
 		StringMap equipGroups = TF2Econ_GetEquipRegionGroups();
+		StringMapSnapshot equipGroupNames = equipGroups.Snapshot();
+		for (int i; i < equipGroupNames.Length; i++) {
+			char groupName[64];
+			equipGroupNames.GetKey(i, groupName, sizeof(groupName));
+			
+			int group, fConflicts;
+			equipGroups.GetValue(groupName, group);
+			
+			TF2Econ_GetEquipRegionMask(groupName, fConflicts);
+			
+			// no known conflicts with anything other than itself (other groups might, though)
+			if (fConflicts & ~(1 << group) == 0) {
+				continue;
+			}
+			
+			// determine the groups for the other conflicting bits
+			for (int j; j < equipGroupNames.Length; j++) {
+				char conflictGroupName[64];
+				equipGroupNames.GetKey(j, conflictGroupName, sizeof(conflictGroupName));
+				
+				int conflictGroup;
+				equipGroups.GetValue(conflictGroupName, conflictGroup);
+				
+				if (fConflicts & (1 << conflictGroup) == 0 || group == conflictGroup) {
+					continue;
+				}
+				
+				db.Format(query, sizeof(query), "INSERT INTO tf2idb_equip_conflicts "
+						... "(name, region) VALUES ('%s', '%s');",
+						groupName, conflictGroupName);
+				
+				regionTxn.AddQuery(query);
+			}
+		}
 		
-		// TODO iterate group names, find masks, then convert to conflicting group names
-		
+		delete equipGroupNames;
 		delete equipGroups;
+		
+		db.Execute(regionTxn, .onError = OnTransactionError);
 	}
 	
 	// items
