@@ -14,7 +14,7 @@
 // TF2IDB stub's database creation stores a bunch of stuff on the heap
 #pragma dynamic 524288
 
-#define PLUGIN_VERSION "0.3.2"
+#define PLUGIN_VERSION "0.4.0"
 public Plugin myinfo = {
 	name = "[TF2] Econ Data Compatibility Layer for TF2II and TF2IDB",
 	author = "nosoop",
@@ -54,9 +54,11 @@ public APLRes AskPluginLoad2(Handle self, bool late, char[] error, int maxlen) {
 }
 
 public void OnAllPluginsLoaded() {
-	
 	if (g_fCompatMode & COMPAT_MODE_TF2IDB) {
 		TF2IDB_BuildDatabase();
+	}
+	if (g_fCompatMode & COMPAT_MODE_TF2II) {
+		// TODO call cache forward
 	}
 }
 
@@ -166,14 +168,12 @@ void RegisterTF2ItemsInfo() {
 	
 	//TF2II_GetItemSlot() maps partially to TF2Econ_GetItemSlot() except it maps tf_weapon_revolver to primary
 	CreateNative("TF2II_GetItemSlot", Native_TF2II_GetItemSlot);
+	CreateNative("TF2II_GetItemSlotName", Native_TF2II_GetItemSlotName);
 	
-	//TF2II_GetItemSlotName() can be done with TF2Econ_GetItemDefinitionString(int defindex, "item_slot", ...), or calling TF2Econ_TranslateLoadoutSlotIndexToName() on the result of TF2Econ_GetItemSlot()
-	CreateNative("TF2II_GetItemSlotName", Native_Common_GetLegacyItemSlotName);
-	
-	//TF2II_GetListedItemSlot() has no equivalent (not sure what the difference is between this and TF2II_GetItemSlot())
+	//TF2II_GetListedItemSlot() maps directly to item_slot with translation to index
 	CreateNative("TF2II_GetListedItemSlot", Native_Common_GetLegacyItemSlot);
 	
-	//TF2II_GetListedItemSlotName() has no equivalent
+	//TF2II_GetListedItemSlotName() maps directly to TF2Econ_GetItemDefinitionString(defindex, "item_slot", ...)
 	CreateNative("TF2II_GetListedItemSlotName", Native_Common_GetLegacyItemSlotName);
 	
 	//TF2II_IsItemUsedByClass() can be done by checking if TF2Econ_GetItemSlot() returns -1 for the given player class.
@@ -205,7 +205,7 @@ void RegisterTF2ItemsInfo() {
 	CreateNative("TF2II_GetItemAttributes", Native_NotImplemented);
 	
 	//TF2II_GetToolType() can be done with TF2Econ_GetItemDefinitionString(defindex, "tool/type", ...)
-	CreateNative("TF2II_GetToolType", Native_NotImplemented);
+	CreateNative("TF2II_GetToolType", Native_TF2II_GetToolType);
 	
 	//TF2II_ItemHolidayRestriction() can be done with TF2Econ_GetItemDefinitionString(defindex, "holiday_restriction", ...) and checking the string for your holiday
 	CreateNative("TF2II_ItemHolidayRestriction", Native_TF2II_ItemHolidayRestriction);
@@ -283,10 +283,10 @@ void RegisterTF2ItemsInfo() {
 	CreateNative("TF2II_GetQualityName", Native_Common_GetQualityName);
 	
 	//TF2II_GetAttributeIDByName() maps directly to TF2Econ_TranslateAttributeNameToDefinitionIndex()
-	CreateNative("TF2II_GetAttributeIDByName", Native_NotImplemented);
+	CreateNative("TF2II_GetAttributeIDByName", Native_TF2II_GetAttributeIDByName);
 	
 	//TF2II_GetAttributeNameByID() maps directly to TF2Econ_GetAttributeName()
-	CreateNative("TF2II_GetAttributeNameByID", Native_NotImplemented);
+	CreateNative("TF2II_GetAttributeNameByID", Native_TF2II_GetAttributeNameByID);
 	
 	//TF2II_FindItems() can be done with TF2Econ_GetItemList() and a user-defined function to filter the results
 	CreateNative("TF2II_FindItems", Native_TF2II_FindItems);

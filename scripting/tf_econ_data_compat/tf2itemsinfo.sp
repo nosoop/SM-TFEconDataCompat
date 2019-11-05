@@ -181,17 +181,16 @@ public bool ItemFilter_TF2IIFindItems(int itemdef, DataPack queryInfo) {
 	if (desiredSlot[0]) {
 		// TODO we need to support tf_weapon_revolver as primary
 		char itemSlot[32];
-		TF2Econ_GetItemDefinitionString(itemdef, "item_slot", itemSlot, sizeof(itemSlot));
-		
-		if (!strlen(itemSlot) || !StrEqual(itemSlot, desiredSlot, false)) {
+		if (!TF2Econ_GetItemDefinitionString(itemdef, "item_slot", itemSlot, sizeof(itemSlot))
+				|| !StrEqual(itemSlot, desiredSlot, false)) {
 			return false;
 		}
 	}
 	
 	if (tool[0]) {
 		char toolType[64];
-		TF2Econ_GetItemDefinitionString(itemdef, "tool/type", toolType, sizeof(toolType));
-		if (!strlen(toolType) || !StrEqual(tool, toolType, false)) {
+		if (!TF2Econ_GetItemDefinitionString(itemdef, "tool/type", toolType, sizeof(toolType))
+				|| !StrEqual(tool, toolType, false)) {
 			return false;
 		}
 	}
@@ -275,6 +274,67 @@ public int Native_TF2II_GetItemClassName(Handle hPlugin, int nParams) {
 		if (playerClass) {
 			TF2Econ_TranslateWeaponEntForClass(buffer, maxlen, playerClass);
 		}
+		SetNativeString(2, buffer, maxlen, true);
+		return true;
+	}
+	return false;
+}
+
+/**
+ * int TF2II_GetAttributeIDByName(const char[] name);
+ */
+public int Native_TF2II_GetAttributeIDByName(Handle hPlugin, int nParams) {
+	int maxlen;
+	GetNativeStringLength(1, maxlen);
+	char[] buffer = new char[++maxlen];
+	GetNativeString(1, buffer, maxlen);
+	
+	return TF2Econ_TranslateAttributeNameToDefinitionIndex(buffer);
+}
+
+/**
+ * bool TF2II_GetAttributeNameByID(int attrdef, char[] buffer, int maxlen);
+ */
+public int Native_TF2II_GetAttributeNameByID(Handle hPlugin, int nParams) {
+	int attrdef = GetNativeCell(1);
+	int maxlen = GetNativeCell(3);
+	
+	char[] buffer = new char[maxlen];
+	if (TF2Econ_GetAttributeName(attrdef, buffer, maxlen)) {
+		SetNativeString(2, buffer, maxlen, true);
+		return true;
+	}
+	return false;
+}
+
+/**
+ * bool TF2II_GetToolType(int itemdef, char[] buffer, int maxlen);
+ */
+public int Native_TF2II_GetToolType(Handle hPlugin, int nParams) {
+	int itemdef = GetNativeCell(1);
+	int maxlen = GetNativeCell(3);
+	
+	char[] buffer = new char[maxlen];
+	if (TF2Econ_GetItemDefinitionString(itemdef, "tool/type", buffer, maxlen)) {
+		SetNativeString(2, buffer, maxlen, true);
+		return true;
+	}
+	return false;
+}
+
+public int Native_TF2II_GetItemSlotName(Handle hPlugin, int nParams) {
+	int itemdef = GetNativeCell(1);
+	int maxlen = GetNativeCell(3);
+	
+	char itemClass[64];
+	TF2Econ_GetItemClassName(itemdef, itemClass, sizeof(itemClass));
+	if (StrEqual(itemClass, "tf_weapon_revolver")) {
+		SetNativeString(2, "primary", maxlen, true);
+		return true;
+	}
+	
+	char[] buffer = new char[maxlen];
+	if (TF2Econ_GetItemDefinitionString(itemdef, "item_slot", buffer, maxlen)) {
 		SetNativeString(2, buffer, maxlen, true);
 		return true;
 	}

@@ -244,6 +244,8 @@ public int Native_Common_GetItemEquipRegions(Handle hPlugin, int nParams) {
 	
 	StringMap regions = TF2Econ_GetEquipRegionGroups();
 	StringMapSnapshot snapshot = regions.Snapshot();
+	
+	// multiple groups can share the same group bit, so test each group name
 	for (int i; i < snapshot.Length; i++) {
 		char buffer[16];
 		snapshot.GetKey(i, buffer, sizeof(buffer));
@@ -273,7 +275,7 @@ static int GetLegacyLoadoutSlot(int defindex, TFClassType playerClass = TFClass_
 	return TF2Econ_TranslateLoadoutSlotNameToIndex(buffer);
 }
 
-static int TranslateLoadoutSlotNameToWeaponSlot(const char[] slotName,
+int TranslateLoadoutSlotNameToWeaponSlot(const char[] slotName,
 		TFClassType playerClass = TFClass_Unknown) {
 	if (StrEqual(slotName, "primary")) {
 		return 0;
