@@ -306,7 +306,7 @@ static int GetItemProperties(int defindex) {
 	}
 	
 	if (_GetItemDefinitionInt(defindex, "capabilities/paintable")) {
-		properties |= TF2II_PROP_BASEITEM;
+		properties |= TF2II_PROP_PAINTABLE;
 	}
 	
 	char holidayBuffer[64];
@@ -324,7 +324,6 @@ static int GetItemProperties(int defindex) {
 	if (_GetItemDefinitionInt(defindex, "propername")) {
 		properties |= TF2II_PROP_PROPER_NAME;
 	}
-	
 	return properties;
 }
 
