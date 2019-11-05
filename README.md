@@ -20,4 +20,16 @@ Hopefully the last time one of these will be necessary.
 
 Install the plugin.  By default, the compatibility shim will register itself as both TF2IDB and
 TF2ItemsInfo.  If you want it to only act as TF2IDB, have `tf2idb` somewhere in the file name.
-Likewise, `tf2itemsinfo` being in the filename makes it only act as TF2ItemsInfo.
+Likewise, `tf2itemsinfo` being in the filename makes it only act as TF2ItemsInfo.  (TF2IDB
+supercedes TF2II in the case that both names are present.)
+
+## Compatibility
+
+The `test_tf2ii_compat` plugin is a test suite to verify that the TF2ItemsInfo natives are
+working correctly; both the compatibility shim and the original TF2II plugin should pass all the
+tests.  The tests are automatically run once when the plugin is loaded and the schema is
+available.
+
+Note that TF2II needs to be recompiled due to certain changes in SourceMod.
+
+No tests are currently available for TF2IDB.
