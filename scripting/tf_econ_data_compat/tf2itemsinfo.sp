@@ -14,6 +14,9 @@
 #define TF2II_PROP_XMAS_STRICT			(1<<13)
 #define TF2II_PROP_PROPER_NAME			(1<<14)
 
+Handle g_FwdItemInfoOnSchemaUpdate;
+Handle g_FwdOnFindItems;
+
 /**
  * bool TF2II_IsItemSchemaPrecached();
  */
@@ -150,7 +153,13 @@ public int Native_TF2II_FindItems(Handle hPlugin, int nParams) {
 	
 	delete queryInfo;
 	
-	// TODO call OnFindItems forward
+	Call_StartForward(g_FwdOnFindItems);
+	Call_PushString(desiredClass);
+	Call_PushString(desiredSlot);
+	Call_PushCell(usedClassBits);
+	Call_PushString(tool);
+	Call_PushCellRef(results);
+	Call_Finish();
 	
 	return MoveHandle(results, hPlugin);
 }

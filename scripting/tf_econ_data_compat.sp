@@ -14,7 +14,7 @@
 // TF2IDB stub's database creation stores a bunch of stuff on the heap
 #pragma dynamic 524288
 
-#define PLUGIN_VERSION "0.5.0"
+#define PLUGIN_VERSION "0.6.0"
 public Plugin myinfo = {
 	name = "[TF2] Econ Data Compatibility Layer for TF2II and TF2IDB",
 	author = "nosoop",
@@ -58,7 +58,8 @@ public void OnAllPluginsLoaded() {
 		TF2IDB_BuildDatabase();
 	}
 	if (g_fCompatMode & COMPAT_MODE_TF2II) {
-		// TODO call cache forward
+		Call_StartForward(g_FwdItemInfoOnSchemaUpdate);
+		Call_Finish();
 	}
 }
 
@@ -295,8 +296,12 @@ void RegisterTF2ItemsInfo() {
 	CreateNative("TF2II_ListEffects", Native_ItemInfo_ListEffects);
 	CreateNative("TF2II_ListAttachableEffects", Native_ItemInfo_ListEffects);
 	
-	//TF2II_OnSearchCommand() is a forward
-	//TF2II_OnFindItems() is a forward
+	g_FwdItemInfoOnSchemaUpdate = CreateGlobalForward("TF2II_OnItemSchemaUpdated", ET_Ignore);
+	
+	g_FwdOnFindItems = CreateGlobalForward("TF2II_OnFindItems", ET_Ignore, Param_String,
+			Param_String, Param_Cell, Param_String, Param_CellByRef);
+	
+	// should we even implement OnSearchCommand? seems like it's only relevant to clients
 	
 	g_fCompatMode |= COMPAT_MODE_TF2II;
 }
