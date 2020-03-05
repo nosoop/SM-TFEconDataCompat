@@ -1,5 +1,13 @@
 #define TF2IDB_MAX_ATTRS 20
 
+enum DatabaseState {
+	Database_IsCurrent,
+	Database_Unavailable,
+	Database_Stale
+};
+
+Database g_Database;
+
 /**
  * bool TF2IDB_GetItemLevels(int defindex, int& min, int& max);
  */
@@ -183,8 +191,12 @@ public int Native_TF2IDB_GetAttributeProperties(Handle hPlugin, int nParams) {
  * This provides support for TF2IDB's TF2IDB_FindItemCustom and TF2IDB_CustomQuery natives.
  */
 Database TF2IDB_BuildDatabase() {
-	Handle prof = CreateProfiler();
-	StartProfiling(prof);
+	// compare database filetime; delete database if either plugin or items_game is newer
+	DatabaseState state = GetDatabaseStatus();
+	
+	if (state == Database_Stale) {
+		SQLite_DropDatabase("tf2idb");
+	}
 	
 	char error[256];
 	Database db = SQLite_UseDatabase("tf2idb", error, sizeof(error));
@@ -192,7 +204,20 @@ Database TF2IDB_BuildDatabase() {
 		SetFailState("Failed to use tf2idb.sq3: %s", error);
 	}
 	
-	// TODO compare database filetime; recreate if either plugin or items_game is newer
+	switch (state) {
+		case Database_Unavailable: {
+			PrintToServer("[tfeconcompat] Database does not exist.  Creating...");
+		}
+		case Database_Stale: {
+			PrintToServer("[tfeconcompat] Database is outdated.  Rebuilding...");
+		}
+		default: {
+			return db;
+		}
+	}
+	
+	Handle prof = CreateProfiler();
+	StartProfiling(prof);
 	
 	// this implements the script from
 	// https://github.com/FlaminSarge/tf2idb/tree/c2bc42e34c2a2e9a4e9ad0d0fe8cda564e970bb6
@@ -575,6 +600,8 @@ Database TF2IDB_BuildDatabase() {
 	StopProfiling(prof);
 	PrintToServer("[tfeconcompat] Database created in %fs.", GetProfilerTime(prof));
 	delete prof;
+	
+	return db;
 }
 
 public void OnTransactionError(Database db, any data, int numQueries, const char[] error,
@@ -586,4 +613,39 @@ static int _GetItemDefinitionInt(int defindex, const char[] key, int defaultValu
 	char buffer[64];
 	return TF2Econ_GetItemDefinitionString(defindex, key, buffer, sizeof(buffer))?
 			StringToInt(buffer) : defaultValue;
+}
+
+/**
+ * Determines if the sqlite database is already up-to-date or needs to be (re)created.
+ */
+static DatabaseState GetDatabaseStatus() {
+	char filePath[PLATFORM_MAX_PATH];
+	BuildPath(Path_SM, filePath, sizeof(filePath), "data/sqlite/tf2idb.sq3");
+	if (!FileExists(filePath)) {
+		return Database_Unavailable;
+	}
+	
+	int databaseTime = GetFileTime(filePath, FileTime_LastChange);
+	
+	char pluginPath[PLATFORM_MAX_PATH];
+	GetPluginFilename(INVALID_HANDLE, pluginPath, sizeof(pluginPath));
+	BuildPath(Path_SM, filePath, sizeof(filePath), "plugins/%s", pluginPath);
+	
+	if (GetFileTime(filePath, FileTime_LastChange) > databaseTime) {
+		return Database_Stale;
+	}
+	
+	Format(filePath, sizeof(filePath), "scripts/items/items_game.txt");
+	if (GetFileTime(filePath, FileTime_LastChange) > databaseTime) {
+		return Database_Stale;
+	}
+	return Database_IsCurrent;
+}
+
+static void SQLite_DropDatabase(const char[] database) {
+	char filePath[PLATFORM_MAX_PATH];
+	BuildPath(Path_SM, filePath, sizeof(filePath), "data/sqlite/%s.sq3", database);
+	if (FileExists(filePath)) {
+		DeleteFile(filePath);
+	}
 }
