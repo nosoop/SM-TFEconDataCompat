@@ -30,6 +30,10 @@ working correctly; both the compatibility shim and the original TF2II plugin sho
 tests.  The tests are automatically run once when the plugin is loaded and the schema is
 available.
 
-Note that TF2II needs to be recompiled due to certain changes in SourceMod.
+Tested against the following TF2ItemsInfo version(s):
+- [1.8.17.7-20131121](https://forums.alliedmods.net/showpost.php?p=1689522&postcount=1)
+- [1.9.1](https://forums.alliedmods.net/showpost.php?p=2184857&postcount=1)
 
-No tests are currently available for TF2IDB.
+Note that for all the compatibility tests to pass for TF2II, that plugin needs to be recompiled
+due to certain changes in SourceMod (mainly the change to `TFHoliday` values being pubvars
+instead of a normal enum).
