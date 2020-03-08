@@ -637,7 +637,29 @@ Database TF2IDB_BuildDatabase() {
 				itemTxn.AddQuery(query);
 			}
 			
-			// TODO deal with used_by_classes
+			// deal with used_by_classes
+			{
+				static char s_ClassNames[][] = {
+					"undefined", "scout", "sniper", "soldier", "demoman",
+					"medic", "heavy", "pyro", "spy", "engineer"
+				};
+				
+				char slotBuffer[32];
+				for (TFClassType ct = TFClass_Scout; ct <= TFClass_Engineer; ct++) {
+					int slot = TF2Econ_GetItemSlot(itemdef, ct);
+					if (slot == -1) {
+						continue;
+					}
+					
+					TF2Econ_TranslateLoadoutSlotIndexToName(slot, slotBuffer,
+							sizeof(slotBuffer));
+					
+					db.Format(query, sizeof(query), "INSERT INTO tf2idb_class "
+							... "(id, class, slot) VALUES (%d, '%s', '%s');",
+							itemdef, s_ClassNames[ct], slotBuffer);
+					itemTxn.AddQuery(query);
+				}
+			}
 			
 			// add equip region refs
 			{
