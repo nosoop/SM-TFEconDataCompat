@@ -184,6 +184,57 @@ public int Native_TF2IDB_GetAttributeProperties(Handle hPlugin, int nParams) {
 	return true;
 }
 
+/**
+ * ArrayList<int>? TF2IDB_FindItemCustom(const char[] query);
+ */
+public int Native_TF2IDB_FindItemCustom(Handle hPlugin, int nParams) {
+	int length;
+	GetNativeStringLength(1, length);
+	
+	char[] query = new char[++length];
+	GetNativeString(1, query, length);
+	
+	DBResultSet results = SQL_Query(g_Database, query);
+	if (!results) {
+		return view_as<int>(INVALID_HANDLE);
+	}
+	ArrayList resultList = new ArrayList();
+	while (results.FetchRow()) {
+		resultList.Push(results.FetchInt(0));
+	}
+	delete results;
+	return MoveHandle(resultList, hPlugin);
+}
+
+/**
+ * DBStatement? TF2IDB_CustomQuery(const char[] query, ArrayList args, int maxlength);
+ */
+public int Native_TF2IDB_CustomQuery(Handle hPlugin, int nParams) {
+	int length;
+	GetNativeStringLength(1, length);
+	
+	char[] query = new char[++length];
+	GetNativeString(1, query, length);
+	
+	char error[256];
+	DBStatement dbQuery = SQL_PrepareQuery(g_Database, query, error, sizeof(error));
+	
+	ArrayList args = view_as<ArrayList>(GetNativeCell(2));
+	char arglen = GetNativeCell(3); // we could deduce this from blocksize
+	
+	char[] argbuf = new char[arglen];
+	for (int i; i < args.Length; i++) {
+		args.GetString(i, argbuf, arglen);
+		dbQuery.BindString(i, argbuf, true);
+	}
+	
+	if (SQL_Execute(dbQuery)) {
+		return view_as<int>(dbQuery);
+	}
+	delete dbQuery;
+	return view_as<int>(INVALID_HANDLE);
+}
+
 #include <profiler>
 
 /**

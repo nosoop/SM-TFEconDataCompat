@@ -14,7 +14,7 @@
 // TF2IDB stub's database creation stores a bunch of stuff on the heap
 #pragma dynamic 524288
 
-#define PLUGIN_VERSION "0.7.0"
+#define PLUGIN_VERSION "0.7.1"
 public Plugin myinfo = {
 	name = "[TF2] Econ Data Compatibility Layer for TF2II and TF2IDB",
 	author = "nosoop",
@@ -137,18 +137,12 @@ void RegisterTF2IDB() {
 	// TF2IDB_GetQualityByName() maps directly to TF2Econ_TranslateQualityNameToValue()
 	CreateNative("TF2IDB_GetQualityByName", Native_Common_GetQualityByName);
 	
-	// sqlite-based things below -- would like to implement these someday by creating / caching a database
-	
 	/**
 	 * TODO: Instantiate an in-memory or file-backed database when we need to use actual SQLite
 	 * queries the first time.
 	 */
-	
-	// TF2IDB_FindItemCustom() is an SQL query.  Not going to implement that.
-	CreateNative("TF2IDB_FindItemCustom", Native_NotImplemented);
-	
-	// in theory we could create a database in memory for this and insert all the stuff
-	CreateNative("TF2IDB_CustomQuery", Native_NotImplemented);
+	CreateNative("TF2IDB_FindItemCustom", Native_TF2IDB_FindItemCustom);
+	CreateNative("TF2IDB_CustomQuery", Native_TF2IDB_CustomQuery);
 	
 	g_fCompatMode |= COMPAT_MODE_TF2IDB;
 }
