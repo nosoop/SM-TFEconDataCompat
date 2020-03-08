@@ -497,6 +497,8 @@ Database TF2IDB_BuildDatabase() {
 	// items
 	{
 		ArrayList items = TF2Econ_GetItemList();
+		StringMap equipRegions = TF2Econ_GetEquipRegionGroups();
+		StringMapSnapshot equipRegionNameSnapshot = equipRegions.Snapshot();
 		
 		Transaction itemTxn = new Transaction();
 		for (int i; i < items.Length; i++) {
@@ -572,9 +574,6 @@ Database TF2IDB_BuildDatabase() {
 				
 				bool bProperName = !!_GetItemDefinitionInt(itemdef, "propername");
 				
-				// TODO determine string attributes
-				bool hasStringAttr = false;
-				
 				db.Format(query, sizeof(query), "INSERT INTO tf2idb_item "
 						... "(id, name, item_name, class, slot, quality, tool_type, "
 						... "min_ilevel, max_ilevel, baseitem, holiday_restriction, "
@@ -582,18 +581,37 @@ Database TF2IDB_BuildDatabase() {
 						... "(%d, '%s', '%s', '%s', '%s', '%s', '%s', "
 						... "%d, %d, %b, '%s', %b, %b);",
 						itemdef, name, localName, className, slotStr, qualityStr, toolStr,
-						nMinLevel, nMaxLevel, bBaseItem, holidayRestriction, hasStringAttr,
-						bProperName);
+						nMinLevel, nMaxLevel, bBaseItem, holidayRestriction,
+						bContainsStringAttr, bProperName);
 				itemTxn.AddQuery(query);
 			}
 			
 			// TODO deal with used_by_classes
 			
-			// TODO deal with equip regions
+			// add equip region refs
+			{
+				int itemRegionBits = TF2Econ_GetItemEquipRegionGroupBits(itemdef);
+				for (int e; e < equipRegionNameSnapshot.Length; e++) {
+					char buffer[16];
+					equipRegionNameSnapshot.GetKey(e, buffer, sizeof(buffer));
+					
+					int bit;
+					if (equipRegions.GetValue(buffer, bit) && (itemRegionBits >> bit) & 1) {
+						db.Format(query, sizeof(query), "INSERT INTO tf2idb_equip_regions "
+								... "(id, region) VALUES (%d, '%s');",
+								itemdef, buffer);
+						itemTxn.AddQuery(query);
+					}
+				}
+			}
 			
 			// TODO deal with capabilities (currently no support in econdata)
 		}
 		db.Execute(itemTxn, .onError = OnTransactionError);
+		
+		delete equipRegionNameSnapshot;
+		delete equipRegions;
+		delete items;
 	}
 	delete stringTypedAttributes;
 	
