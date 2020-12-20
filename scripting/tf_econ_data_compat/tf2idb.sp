@@ -514,8 +514,10 @@ Database TF2IDB_BuildDatabase() {
 			
 			TF2Econ_GetEquipRegionMask(groupName, fConflicts);
 			
-			// no known conflicts with anything other than itself (other groups might, though)
-			if (fConflicts & ~(1 << group) == 0) {
+			// mask out own group
+			fConflicts &= ~(1 << group);
+			
+			if (!fConflicts) {
 				continue;
 			}
 			
@@ -527,7 +529,7 @@ Database TF2IDB_BuildDatabase() {
 				int conflictGroup;
 				equipGroups.GetValue(conflictGroupName, conflictGroup);
 				
-				if (fConflicts & (1 << conflictGroup) == 0 || group == conflictGroup) {
+				if (fConflicts & (1 << conflictGroup) == 0) {
 					continue;
 				}
 				

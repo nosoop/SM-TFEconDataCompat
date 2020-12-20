@@ -14,7 +14,7 @@
 // TF2IDB stub's database creation stores a bunch of stuff on the heap
 #pragma dynamic 524288
 
-#define PLUGIN_VERSION "0.7.3"
+#define PLUGIN_VERSION "0.7.4"
 public Plugin myinfo = {
 	name = "[TF2] Econ Data Compatibility Layer for TF2II and TF2IDB",
 	author = "nosoop",
