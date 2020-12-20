@@ -264,15 +264,12 @@ public int Native_Common_GetItemEquipRegions(Handle hPlugin, int nParams) {
 /**
  * Falls back to default item slot if slot is not valid for class.
  */
-static int GetLegacyLoadoutSlot(int defindex, TFClassType playerClass = TFClass_Unknown) {
-	int slot = TF2Econ_GetItemSlot(defindex, playerClass);
-	if (slot != -1) {
-		return slot;
+int GetLegacyLoadoutSlot(int defindex, TFClassType playerClass = TFClass_Unknown) {
+	int slot = TF2Econ_GetItemLoadoutSlot(defindex, playerClass);
+	if (slot == -1) {
+		return TF2Econ_GetItemDefaultLoadoutSlot(defindex);
 	}
-	
-	char buffer[64];
-	TF2Econ_GetItemDefinitionString(defindex, "item_slot", buffer, sizeof(buffer));
-	return TF2Econ_TranslateLoadoutSlotNameToIndex(buffer);
+	return slot;
 }
 
 int TranslateLoadoutSlotNameToWeaponSlot(const char[] slotName,

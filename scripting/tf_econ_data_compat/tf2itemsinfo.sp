@@ -127,7 +127,7 @@ public int Native_TF2II_IsItemUsedByClass(Handle hPlugin, int nParams) {
 	int itemdef = GetNativeCell(1);
 	TFClassType playerClass = GetNativeCell(2);
 	
-	return TF2Econ_GetItemSlot(itemdef, playerClass) != -1;
+	return TF2Econ_GetItemLoadoutSlot(itemdef, playerClass) != -1;
 }
 
 /**
@@ -357,7 +357,7 @@ static int GetUseClassBits(int defindex) {
 	// scout is shifted 0 bits instead of 1
 	int bits;
 	for (TFClassType i = TFClass_Scout; i < TFClassType; i++) {
-		if (TF2Econ_GetItemSlot(defindex, i) != -1) {
+		if (TF2Econ_GetItemLoadoutSlot(defindex, i) != -1) {
 			bits |= (1 << (view_as<int>(i) - 1));
 		}
 	}
@@ -400,18 +400,4 @@ static int _GetItemDefinitionInt(int defindex, const char[] key, int defaultValu
 	char buffer[64];
 	return TF2Econ_GetItemDefinitionString(defindex, key, buffer, sizeof(buffer))?
 			StringToInt(buffer) : defaultValue;
-}
-
-/**
- * Falls back to default item slot if slot is not valid for class.
- */
-static int GetLegacyLoadoutSlot(int defindex, TFClassType playerClass = TFClass_Unknown) {
-	int slot = TF2Econ_GetItemSlot(defindex, playerClass);
-	if (slot != -1) {
-		return slot;
-	}
-	
-	char buffer[64];
-	TF2Econ_GetItemDefinitionString(defindex, "item_slot", buffer, sizeof(buffer));
-	return TF2Econ_TranslateLoadoutSlotNameToIndex(buffer);
 }

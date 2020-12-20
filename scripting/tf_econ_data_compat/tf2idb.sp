@@ -30,7 +30,7 @@ public int Native_TF2IDB_UsedByClasses(Handle hPlugin, int nParams) {
 	
 	int result;
 	for (TFClassType i; i < TFClassType; i++) {
-		if (TF2Econ_GetItemSlot(defindex, i) != -1) {
+		if (TF2Econ_GetItemLoadoutSlot(defindex, i) != -1) {
 			result |= (1 << view_as<int>(i));
 		}
 	}
@@ -646,7 +646,7 @@ Database TF2IDB_BuildDatabase() {
 				
 				char slotBuffer[32];
 				for (TFClassType ct = TFClass_Scout; ct <= TFClass_Engineer; ct++) {
-					int slot = TF2Econ_GetItemSlot(itemdef, ct);
+					int slot = TF2Econ_GetItemLoadoutSlot(itemdef, ct);
 					if (slot == -1) {
 						continue;
 					}
