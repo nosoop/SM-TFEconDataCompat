@@ -14,8 +14,12 @@
 #define TF2II_PROP_XMAS_STRICT			(1<<13)
 #define TF2II_PROP_PROPER_NAME			(1<<14)
 
+#define TF2II_EXTDATA_PATH "data/tf2itemsinfo.txt"
+#define ITEMDEF_BUFFER_LEN 8
+
 Handle g_FwdItemInfoOnSchemaUpdate;
 Handle g_FwdOnFindItems;
+StringMap g_NonSchemaCapabilityMap; // <def_string, flags>
 
 /**
  * bool TF2II_IsItemSchemaPrecached();
@@ -350,6 +354,62 @@ public int Native_TF2II_GetItemSlotName(Handle hPlugin, int nParams) {
 	return false;
 }
 
+void TF2II_InitNonSchemaCapabilityMap() {
+	delete g_NonSchemaCapabilityMap;
+	g_NonSchemaCapabilityMap = new StringMap();
+	
+	char configPath[PLATFORM_MAX_PATH];
+	BuildPath(Path_SM, configPath, sizeof(configPath), "%s", TF2II_EXTDATA_PATH);
+	
+	KeyValues data = new KeyValues("items_config");
+	data.ImportFromFile(configPath);
+	
+	if (!data.GotoFirstSubKey()) {
+		LogMessage("%s", "Missing data/tf2itemsinfo.txt; "
+				... "TF2II stub will not be aware of non-schema item capabilities");
+		delete data;
+		return;
+	}
+	
+	char strItemDef[ITEMDEF_BUFFER_LEN];
+	do {
+		data.GetSectionName(strItemDef, sizeof(strItemDef));
+		
+		int itemdef;
+		if (StringToIntEx(strItemDef, itemdef) != strlen(strItemDef)) {
+			continue;
+		}
+		
+		int properties;
+		if (data.GetNum("unusual")) {
+			properties |= TF2II_PROP_UNUSUAL;
+		}
+		if (data.GetNum("vintage")) {
+			properties |= TF2II_PROP_VINTAGE;
+		}
+		if (data.GetNum("strange")) {
+			properties |= TF2II_PROP_STRANGE;
+		}
+		if (data.GetNum("haunted")) {
+			properties |= TF2II_PROP_HAUNTED;
+		}
+		if (data.GetNum("halloween")) {
+			properties |= TF2II_PROP_HALLOWEEN;
+		}
+		if (data.GetNum("promotional")) {
+			properties |= TF2II_PROP_PROMOITEM;
+		}
+		if (data.GetNum("genuine")) {
+			properties |= TF2II_PROP_GENUINE;
+		}
+		if (data.GetNum("medieval")) {
+			properties |= TF2II_PROP_MEDIEVAL;
+		}
+		g_NonSchemaCapabilityMap.SetValue(strItemDef, properties);
+	} while (data.GotoNextKey());
+	delete data;
+}
+
 /**
  * Returns an implementation of tf2itemsinfo's used_by_classes bitfield (TF2II_CLASS_*).
  */
@@ -369,7 +429,16 @@ static int GetItemProperties(int defindex) {
 		return 0;
 	}
 	
-	int properties = TF2II_PROP_VALIDITEM;
+	int properties;
+	{
+		char strItemDef[ITEMDEF_BUFFER_LEN];
+		IntToString(defindex, strItemDef, sizeof(strItemDef));
+		
+		g_NonSchemaCapabilityMap.GetValue(strItemDef, properties);
+	}
+	
+	properties |= TF2II_PROP_VALIDITEM;
+	
 	if (_GetItemDefinitionInt(defindex, "baseitem")) {
 		properties |= TF2II_PROP_BASEITEM;
 	}

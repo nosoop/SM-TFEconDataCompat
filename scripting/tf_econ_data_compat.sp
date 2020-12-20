@@ -14,7 +14,7 @@
 // TF2IDB stub's database creation stores a bunch of stuff on the heap
 #pragma dynamic 524288
 
-#define PLUGIN_VERSION "0.7.4"
+#define PLUGIN_VERSION "0.8.0"
 public Plugin myinfo = {
 	name = "[TF2] Econ Data Compatibility Layer for TF2II and TF2IDB",
 	author = "nosoop",
@@ -296,6 +296,8 @@ void RegisterTF2ItemsInfo() {
 			Param_String, Param_Cell, Param_String, Param_CellByRef);
 	
 	// should we even implement OnSearchCommand? seems like it's only relevant to clients
+	
+	TF2II_InitNonSchemaCapabilityMap();
 	
 	g_fCompatMode |= COMPAT_MODE_TF2II;
 }
