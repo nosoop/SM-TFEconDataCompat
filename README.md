@@ -18,10 +18,23 @@ Hopefully the last time one of these will be necessary.
 
 ## Usage
 
-Install the plugin.  By default, the compatibility shim will register itself as both TF2IDB and
-TF2ItemsInfo.  If you want it to only act as TF2IDB, have `tf2idb` somewhere in the file name.
-Likewise, `tf2itemsinfo` being in the filename makes it only act as TF2ItemsInfo.  (TF2IDB
-supercedes TF2II in the case that both names are present.)
+This plugin is designed as a drop-in replacement of the aforementioned plugins.
+
+1.  Install [TF2 Econ Data][].
+2.  If you're already using TF2IDB or TF2ItemsInfo, remove or disable the plugin.
+2.  Install [the latest release of the adapter][releases] (or build from source).
+
+By default, the compatibility shim will register itself as both TF2IDB and TF2ItemsInfo.
+If you want it to only act as TF2IDB, have `tf2idb` somewhere in the file name.
+Likewise, `tf2itemsinfo` being in the filename makes it only act as TF2ItemsInfo.
+(If both names are present, TF2IDB supercedes TF2ItemsInfo.)
+
+Specifically for TF2ItemsInfo: If you are doing first-time setup, you may also want to
+[install TF2II's external data file][tf2ii-txt] to ensure the out-of-band properties 
+(things like determining that a weapon can be vintage / strange) work.
+
+[releases]: https://github.com/nosoop/SM-TFEconDataCompat/releases
+[tf2ii-txt]: https://github.com/sim1/tf2itemsinfo/blob/master/data/tf2itemsinfo.txt
 
 ## Compatibility
 
