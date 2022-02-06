@@ -14,7 +14,7 @@
 // TF2IDB stub's database creation stores a bunch of stuff on the heap
 #pragma dynamic 524288
 
-#define PLUGIN_VERSION "0.8.0"
+#define PLUGIN_VERSION "0.8.1"
 public Plugin myinfo = {
 	name = "[TF2] Econ Data Compatibility Layer for TF2II and TF2IDB",
 	author = "nosoop",
@@ -53,7 +53,19 @@ public APLRes AskPluginLoad2(Handle self, bool late, char[] error, int maxlen) {
 	return APLRes_Success;
 }
 
-public void OnAllPluginsLoaded() {
+/**
+ * Receive a notification once Econ Data has started.  This allows our code to run before
+ * OnAllPluginsLoaded, but after we receive OnPluginStart (at which point Econ Data itself may
+ * not have been started; we can't call natives that depend on SDKCall until it is, which is
+ * damn near all of them).
+ */
+public void OnLibraryAdded(const char[] name) {
+	if (StrEqual(name, "tf_econ_data")) {
+		OnEconDataAvailable();
+	}
+}
+
+void OnEconDataAvailable() {
 	if (g_fCompatMode & COMPAT_MODE_TF2IDB) {
 		g_Database = TF2IDB_BuildDatabase();
 	}
